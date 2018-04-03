@@ -13,15 +13,7 @@ import os
 # import count data
 inputfile = '../analysis/normal_brca_q30_removeclip.count_with_af.txt'
 countData = pd.read_table(inputfile, sep='\t')
-# import capture bed file
-capture_bed = '/home/users/team_projects/NormalBRCA/bed/0813181_Covered.bed'
-capture_regions = get_capture_regions(capture_bed)
 
-capture_df = pd.read_table(capture_bed, header=None, delim_whitespace=True)
-
-# import indel for each bams
-indel_1 = indel_positions('../variant_call/varscan_indel/114846-D-19.sorted.whole.postdedup.rg.q30.removeclip.indel.vcf.gz')
-indel_9 = indel_positions('../variant_call/varscan_indel/92247-D-29.sorted.whole.postdedup.rg.q30.removeclip.indel.vcf.gz')
 
 
 def indel_positions(indel_vcf):
@@ -47,6 +39,16 @@ def get_capture_regions(capture_bed):
             
     return capture_positions
 
+
+# import capture bed file
+capture_bed = '/home/users/team_projects/NormalBRCA/bed/0813181_Covered.bed'
+capture_regions = get_capture_regions(capture_bed)
+
+capture_df = pd.read_table(capture_bed, header=None, delim_whitespace=True)
+
+# import indel for each bams
+indel_1 = indel_positions('../variant_call/varscan_indel/114846-D-19.sorted.whole.postdedup.rg.q30.removeclip.indel.vcf.gz')
+indel_9 = indel_positions('../variant_call/varscan_indel/92247-D-29.sorted.whole.postdedup.rg.q30.removeclip.indel.vcf.gz')
 
 
 def is_in(row, pos):
