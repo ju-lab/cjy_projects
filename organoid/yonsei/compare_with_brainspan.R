@@ -2,6 +2,7 @@
 # Jongsoo Yoon (cjyoon@kaist.ac.kr) April 4 2018
 
 library(ggplot2)
+library(ggpubr)
 library(tidyverse)
 ############################################################################################
 
@@ -35,9 +36,9 @@ bem_2$sample_name = 'bem_2'
 bem_3$sample_name = 'bem_3'
 
 # distinct removes duplicate rows for each rsem results (one example of duplicate row had ensembl_gene_id=IGH)
-bem_1_data = bem_1 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-bem_2_data = bem_2 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-bem_3_data = bem_3 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
+bem_1_data = bem_1 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+bem_2_data = bem_2 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+bem_3_data = bem_3 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
 bem_merged = rbind(bem_1_data, bem_2_data, bem_3_data)
 
 bem_fpkm = bem_merged %>% group_by(ensembl_gene_id) %>% summarise(bem = mean(FPKM))
@@ -50,9 +51,9 @@ mat_3 = format_rsem_ensembl_gene('~/Projects/yonsei_organoid/rsem/MAT_3_rsem.gen
 mat_1$sample_name = 'mat_1'
 mat_2$sample_name = 'mat_2'
 mat_3$sample_name = 'mat_3'
-mat_1_data = mat_1 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-mat_2_data = mat_2 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-mat_3_data = mat_3 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
+mat_1_data = mat_1 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+mat_2_data = mat_2 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+mat_3_data = mat_3 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
 
 mat_merged = rbind(mat_1_data, mat_2_data, mat_3_data)
 mat_fpkm = mat_merged %>% group_by(ensembl_gene_id) %>% summarise(mat = mean(FPKM))
@@ -66,9 +67,9 @@ nsc_1$sample_name = 'nsc_1'
 nsc_2$sample_name = 'nsc_2'
 nsc_3$sample_name = 'nsc_3'
 
-nsc_1_data = nsc_1 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-nsc_2_data = nsc_2 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-nsc_3_data = nsc_3 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
+nsc_1_data = nsc_1 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+nsc_2_data = nsc_2 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+nsc_3_data = nsc_3 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
 
 nsc_merged = rbind(nsc_1_data, nsc_2_data, nsc_3_data)
 nsc_fpkm = nsc_merged %>% group_by(ensembl_gene_id) %>% summarise(nsc = mean(FPKM))
@@ -83,9 +84,9 @@ tissue_1$sample_name = 'tissue_1'
 tissue_2$sample_name = 'tissue_2'
 tissue_3$sample_name = 'tissue_3'
 
-tissue_1_data = tissue_1 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-tissue_2_data = tissue_2 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
-tissue_3_data = tissue_3 %>% select(ensembl_gene_id, FPKM, sample_name) %>% distinct(ensembl_gene_id, FPKM, sample_name)
+tissue_1_data = tissue_1 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+tissue_2_data = tissue_2 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
+tissue_3_data = tissue_3 %>% select(ensembl_gene_id, FPKM, TPM, sample_name) %>% distinct(ensembl_gene_id, FPKM, TPM, sample_name)
 
 tissue_merged = rbind(tissue_1_data, tissue_2_data, tissue_3_data)
 tissue_fpkm = tissue_merged %>% group_by(ensembl_gene_id) %>% summarise(tissue = mean(FPKM))
@@ -134,3 +135,26 @@ nsc_coefficients = (corr_result_df %>% gather(c(1:524, 'mat', 'bem', 'tissue', '
 nsc_mean_coefficient = as.double(nsc_coefficients %>% summarise(mean=mean(corr_coef)))
 ggplot(nsc_coefficients, aes(corr_coef)) + geom_histogram() + xlim(0.5,1) + ylim(0, 400) + ggtitle('NSC spearman coefficients with Brainspan RNA-Seq Data')+ geom_vline(xintercept = nsc_mean_coefficient) + annotate('text', x=nsc_mean_coefficient, y= 300, label=str_c('mean coefficient =', round(nsc_mean_coefficient, digits = 4)))
 dev.off() 
+
+
+
+combined_data = rbind(bem_1_data, bem_2_data, bem_3_data, mat_1_data, mat_2_data, mat_3_data, nsc_1_data, nsc_2_data, nsc_3_data, tissue_1_data, tissue_2_data, tissue_3_data)
+plot_TPM<-function(ensembl_geneID, geneName){
+  combined_data %>% separate(sample_name, c('type', 'replicate')) %>% 
+    filter(ensembl_gene_id ==ensembl_geneID) %>% 
+    ggplot(aes(x=type, y=TPM)) + geom_jitter(width=0.01) + theme_pubr() + ggtitle(str_c(geneName, '(', ensembl_geneID, ')'))
+  
+}
+
+plot_TPM('ENSG00000165588', 'OTX2')
+plot_TPM('ENSG00000164778', 'EN2')
+plot_TPM('ENSG00000204531', 'OCT4')
+plot_TPM('ENSG00000136826', 'KLF4')
+plot_TPM('ENSG00000176165', 'FOXG1')
+plot_TPM('ENSG00000135638', 'EMX1')
+plot_TPM('ENSG00000180613', 'GSX2')
+plot_TPM('ENSG00000144355', 'DLX1')
+plot_TPM('ENSG00000104327', 'CALB1')
+plot_TPM('ENSG00000183036', 'PCP4')
+plot_TPM('ENSG00000007372', 'PAX6')
+plot_TPM('ENSG00000164736', 'SOX17')

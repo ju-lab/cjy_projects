@@ -4,7 +4,9 @@ library(tidyverse)
 library(ggplot2)
 library(ggpubr)
 library(ggbio)
-
+library(cowplot)
+# Add Anaconda installed Library paths
+.libPaths( c( .libPaths(), "/home/users/cjyoon/anaconda3/lib/R/library") )
 ########################################
 # Import and Combine tidied data
 ########################################
@@ -90,7 +92,12 @@ coding_mutation_count$type='Coding'
 
 combined_count = rbind(mutation_count, coding_mutation_count)
 combined_count$sampleID = factor(combined_count$sampleID, levels = rev(levels(combined_count$sampleID)))
-ggplot(combined_count, aes(x=sampleID, y=n, fill=factor(type, levels=c('Non-coding', 'Coding')))) + ylab('Number of mutations') +
+
+# Median value 
+snv_count_bysample = df_all %>% group_by(sampleID) %>% tally() 
+median(snv_count_bysample$n) # 6302
+
+snv_count = ggplot(combined_count, aes(x=sampleID, y=n, fill=factor(type, levels=c('Non-coding', 'Coding')))) + ylab('Number of mutations') +
          geom_bar(stat = "identity") + theme_pubr()+ theme(axis.text.x=element_text(angle=90,hjust=1)) + scale_fill_discrete(name = "Mutation Types")
 
 
@@ -98,5 +105,70 @@ ggplot(combined_count, aes(x=sampleID, y=n, fill=factor(type, levels=c('Non-codi
 ########################################
 # Import SV data
 ########################################
-sv_all = as.tibble(read.table('/home/users/cjyoon/Projects/myeloma/analysis/sv_intersect/sv_filtered_29mm_all.tsv', col.names = c('bp2', 'bp2', 'sv_type', 'sample')))
-sv_all %>% separate(sample, c('sampleID', 'dummy'), extra='drop')
+sv_all = as.tibble(read.table('/home/users/cjyoon/Projects/myeloma/analysis/sv_intersect/sv_filtered_29mm_all.tsv', col.names = c('bp1', 'bp2', 'sv_type', 'sample')))
+sv_count = sv_all %>% separate(sample, c('sampleID', 'dummy'), extra='drop') %>% group_by(sampleID, sv_type) %>% tally() %>% 
+  ggplot(aes(x=sampleID, y=n, fill=sv_type))+ geom_bar(stat='identity') + theme_pubr() + 
+  theme(axis.text.x=element_text(angle=90, hjust=1)) +scale_fill_discrete(name = "SV Types") +
+  ylab('Number of mutations')
+
+# median SV event
+sv_count_bysample = (sv_all %>% separate(sample, c('sampleID', 'dummy'), extra='drop') %>% group_by(sampleID, sv_type) %>% group_by(sampleID) %>% tally())
+median(sv_count_bysample$n) # median SV event per sample = 28
+
+########################################
+# Combine counts into a single plot
+########################################
+sv_snv_plot = plot_grid(snv_count, sv_count, labels = c('A', 'B'), ncol=1, align='v')
+ggsave(filename = '/home/users/cjyoon/Projects/myeloma/figures/sv_snv_counts.png', plot = sv_snv_plot, dpi = 200)
+
+
+
+########################################
+# Import Clinical Data
+########################################
+clinical_df = as.tibble(read.table('/home/users/cjyoon/Projects/myeloma/sample_info/clinical_data.txt', header=T, colClasses=c('character', 'character', 'integer', 'factor', 'double', 'character')))
+
+########################################
+# Dependence on Age
+# -> Negative 
+########################################
+my.formula <- y ~ x
+sv_count_bysample %>% left_join(clinical_df, by = c('sampleID'='sampleName')) %>% 
+  ggplot(aes(x=Age, y=n)) + geom_point() + geom_smooth(method='lm',formula=y~x) +  
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),  parse = TRUE)
+snv_count_bysample %>% left_join(clinical_df, by = c('sampleID'='sampleName')) %>% 
+  ggplot(aes(x=Age, y=n)) + geom_point() + geom_smooth(method='lm',formula=y~x) +  
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),  parse = TRUE)
+
+
+# Correlation between SNV and SV count 
+sv_count_by_sample_join = sv_count_bysample %>% left_join(clinical_df, by = c('sampleID'='sampleName')) %>% mutate(sv_count = n) %>% select(sampleID, sv_count)
+snv_count_by_sample_join = snv_count_bysample %>% left_join(clinical_df, by = c('sampleID'='sampleName')) %>% mutate(snv_count = n) %>% select(sampleID, snv_count)
+
+sv_snv_correlation = sv_count_by_sample_join %>% left_join(snv_count_by_sample_join) %>%
+  ggplot(aes(x=snv_count, y=sv_count)) + geom_point() + geom_smooth(method='lm', formulat=y~x) + 
+  stat_poly_eq(formula = my.formula, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),  parse = TRUE) + 
+  xlab('SNV count') + ylab('SV count') 
+ggsave(filename='/home/users/cjyoon/Projects/myeloma/figures/sv_snv_correlation.png',sv_snv_correlation , dpi=200 )
+
+########################################
+# Landscape plot 
+########################################
+
+
+df_all %>% filter(Consequence == 'intron_variant') %>% group_by(SYMBOL) %>% tally() %>% arrange(desc(n))
+# # A tibble: 11,170 x 2
+# SYMBOL      n
+# <chr>   <int>
+#   1 ROBO2     417
+# 2 CSMD1     400
+# 3 CNTNAP2   371
+# 4 EYS       367
+# 5 LRP1B     364
+# 6 PTPRD     324
+# 7 CTNNA2    303
+# 8 CSMD3     289
+# 9 GRID2     286
+# 10 CDH12     272
+
+df_all %>% filter(Consequence != 'intron_variant') %>% group_by(SYMBOL) %>% tally() %>% arrange(desc(n))
