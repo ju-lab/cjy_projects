@@ -6,8 +6,8 @@ Different from PDP analysis in that population frequency filter has been loosene
 since no variant was found with 0.01 cutoff.
 
 Modified 2018.07.01. Fixing variant_type and vaf calculation errors. 
-Modiifed 2018.07.02. Output all variatns regardless of max_af_vaf and variant classification to include MT variants and just to make the table very inclusive. 
-
+Modiifed 2018.07.02. Output all variants regardless of max_af_vaf and variant classification to include MT variants and just to make the table very inclusive. 
+Modified 2018.08.05 v3 Added depth of each sample to allow appropriate depth filtering for better identification of all de novo variants 
 '''
 
 import re
@@ -76,10 +76,11 @@ def sample_vafs(variant):
 
     return pdp1_vaf, pdp2_vaf, pdp3_vaf, pdp4_vaf, ssc1_vaf, ssc2_vaf, ssc3_vaf, ssc4_vaf, ssc5_vaf
 
-output = '/home/users/cjyoon/Projects/rheum/data_processing/01_freebayes/fishing/pdp_ssc_variantFishing_nomodel_v2.tsv'
+
+output = '/home/users/cjyoon/Projects/rheum/data_processing/01_freebayes/fishing/pdp_ssc_variantFishing_nomodel_v3_with_individual_depths.tsv'
 with open(output, 'w') as g:
     # write header
-    g.write(f'CHROM\tPOS\tREF\tALT\tmax_af_gnomad\tgene\tconsequence\tprotein_change\tsift\tpolyphen\tpdp1_geno\tpdp1_vaf\tpdp2_geno\tpdp2_vaf\tpdp3_geno\tpdp3_vaf\tpdp4_geno\tpdp4_vaf\tssc1_geno\tssc1_vaf\tssc2_geno\tssc2_vaf\tssc3_geno\tssc3_vaf\tssc4_geno\tssc4_vaf\tssc5_geno\tssc5_vaf\tavgdepth')
+    g.write(f'CHROM\tPOS\tREF\tALT\tmax_af_gnomad\tgene\tconsequence\tprotein_change\tsift\tpolyphen\tpdp1_geno\tpdp1_vaf\tpdp1_depth\tpdp2_geno\tpdp2_vaf\tpdp2_depth\tpdp3_geno\tpdp3_vaf\tpdp3_depth\tpdp4_geno\tpdp4_vaf\tpdp4_depth\tssc1_geno\tssc1_vaf\tssc1_depth\tssc2_geno\tssc2_vaf\tssc2_depth\tssc3_geno\tssc3_vaf\tssc3_depth\tssc4_geno\tssc4_vaf\tssc4_depth\tssc5_geno\tssc5_vaf\tssc5_depth\tavgdepth')
     for variant in cyvcf2.VCF('/home/users/cjyoon/Projects/rheum/data_processing/01_freebayes/everyone.freebayes.decomposed.norm.vep.centelexcl.vcf.gz'):
         pdp1, pdp2, pdp3, pdp4, ssc1, ssc2, ssc3, ssc4, ssc5 = variant.genotypes
         pdp1_geno = variant_type(pdp1[0:2])
@@ -94,7 +95,8 @@ with open(output, 'w') as g:
 
         pdp1_vaf, pdp2_vaf, pdp3_vaf, pdp4_vaf, ssc1_vaf, ssc2_vaf, ssc3_vaf, ssc4_vaf, ssc5_vaf = sample_vafs(variant)
         # print(f'{pdp1_vaf}, {pdp2_vaf}, {pdp3_vaf}, {pdp4_vaf}, {ssc1_vaf}, {ssc2_vaf}, {ssc3_vaf}, {ssc4_vaf}, {ssc5_vaf}')
-      
+
+        pdp1_depth, pdp2_depth, pdp3_depth, pdp4_depth, ssc1_depth, ssc2_depth, ssc3_depth, ssc4_depth, ssc5_depth = variant.gt_depths
 
         csq = variant.INFO.get('CSQ')
         canonical = find_canonical_annotation(csq)
@@ -120,7 +122,7 @@ with open(output, 'w') as g:
         # only report rare (10% threshold) that are not intronic/regulatory/synonymous... etc and 
         # not in very high depth region of the genome. 
         #if max_af_gnomad < 0.1 and not re.search(r'(intron_variant|regulatory_region_variant|intergenic_variant|downstream|upstream|UTR|non_coding|TF_binding_site_variant|synonymous)', consequence) and avgdepth < max_depth_threshold:
-        g.write(f'\n{variant.CHROM}\t{variant.POS}\t{variant.REF}\t{variant.ALT[0]}\t{max_af_gnomad}\t{gene}\t{consequence}\t{protein_change}\t{sift}\t{polyphen}\t{pdp1_geno}\t{pdp1_vaf}\t{pdp2_geno}\t{pdp2_vaf}\t{pdp3_geno}\t{pdp3_vaf}\t{pdp4_geno}\t{pdp4_vaf}\t{ssc1_geno}\t{ssc1_vaf}\t{ssc2_geno}\t{ssc2_vaf}\t{ssc3_geno}\t{ssc3_vaf}\t{ssc4_geno}\t{ssc4_vaf}\t{ssc5_geno}\t{ssc5_vaf}\t{avgdepth}')
+        g.write(f'\n{variant.CHROM}\t{variant.POS}\t{variant.REF}\t{variant.ALT[0]}\t{max_af_gnomad}\t{gene}\t{consequence}\t{protein_change}\t{sift}\t{polyphen}\t{pdp1_geno}\t{pdp1_vaf}\t{pdp1_depth}\t{pdp2_geno}\t{pdp2_vaf}\t{pdp2_depth}\t{pdp3_geno}\t{pdp3_vaf}\t{pdp3_depth}\t{pdp4_geno}\t{pdp4_vaf}\t{pdp4_depth}\t{ssc1_geno}\t{ssc1_vaf}\t{ssc1_depth}\t{ssc2_geno}\t{ssc2_vaf}\t{ssc2_depth}\t{ssc3_geno}\t{ssc3_vaf}\t{ssc3_depth}\t{ssc4_geno}\t{ssc4_vaf}\t{ssc4_depth}\t{ssc5_geno}\t{ssc5_vaf}\t{ssc5_depth}\t{avgdepth}')
 
         
 
